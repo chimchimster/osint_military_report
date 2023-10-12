@@ -1,8 +1,10 @@
-from typing import List, Dict, Union
-
+import sys
 import json
 import pathlib
+import asyncio
 import aiofiles
+
+from typing import List, Dict, Union
 
 
 async def read_schema(path: pathlib.Path, key: str) -> Union[List, Dict]:
@@ -12,14 +14,36 @@ async def read_schema(path: pathlib.Path, key: str) -> Union[List, Dict]:
         return json.loads(data).get(key)
 
 
-async def remove_report(path: pathlib.Path, report_name: str) -> None:
+async def remove_report(
+        path_to_temp: pathlib.Path,
+        report_file_name: str,
+) -> None:
 
-    for file_name in path.iterdir():
-        if file_name.name == report_name:
-            file_name.unlink()
+    for child in path_to_temp.iterdir():
+        if child.name.endswith(report_file_name):
+            print(child)
+            await asyncio.sleep(5)
+            child.unlink()
+
+
+async def cleanup_directory():
+
+    directory_path = pathlib.Path.cwd() / 'reports' / 'temp'
+    for item in directory_path.iterdir():
+        if item.is_file():
+            item.unlink()
+
+
+async def graceful_exit(signum, frame):
+
+    await cleanup_directory()
+
+    sys.exit(0)
 
 
 __all__ = [
     'read_schema',
     'remove_report',
+    'graceful_exit',
+    'cleanup_directory',
 ]

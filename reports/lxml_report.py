@@ -10,8 +10,9 @@ from .database import *
 from .utils import *
 
 
-async def render_lxml_document(
-        users_data: List[List]):
+async def generate_dataframe(
+        users_data: List[List],
+) -> DataFrame:
 
     tasks = [asyncio.create_task(prepare_data(*user_data)) for user_data in users_data]
 
@@ -53,10 +54,7 @@ async def render_lxml_document(
     dataframe['Время последнего входа в сеть'] = (dataframe['Время последнего входа в сеть']
                                                   .dt.strftime('%d-%m-%Y %H:%M:%S'))
 
-    print(dataframe)
-
-    with ExcelWriter('output.xlsx', engine='xlsxwriter') as writer:
-        dataframe.to_excel(writer,  sheet_name='Военнослужащие')
+    return dataframe
 
 
 async def prepare_data(
@@ -70,3 +68,15 @@ async def prepare_data(
     contacts, relation = json.loads(info_json).get('contacts'), json.loads(info_json).get('relation')
 
     return [user_name, sex, contacts, relation, 0, last_seen_time_unix, platform_type]
+
+
+def render_xlsx_document(
+        dataframe: DataFrame,
+        report_path: Path,
+) -> None:
+
+    try:
+        with ExcelWriter(report_path, engine='xlsxwriter', mode='w') as writer:
+            dataframe.to_excel(writer,  sheet_name='Военнослужащие')
+    except FileNotFoundError:
+        raise FileNotFoundError
