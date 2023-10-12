@@ -1,1 +1,4 @@
 reports/database/.env
+__pycache__/
+reports/__pycache__/
+reports/database/__pycache__/
