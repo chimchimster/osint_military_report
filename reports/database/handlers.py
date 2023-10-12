@@ -49,12 +49,11 @@ async def get_normal_users_data_mapped_to_moderator(
         UserProfile,
         UserLastSeen.time,
         UserLastSeen.platform,
-    ).group_by(UserProfile.res_id).select_from(
+    ).select_from(
         join(User, UserMonitoringProfile, User.id == UserMonitoringProfile.id).
         join(MonitoringProfile, UserMonitoringProfile.profile_id == MonitoringProfile.profile_id).
         join(MonitoringProfileSource, UserMonitoringProfile.profile_id == MonitoringProfileSource.profile_id).
         join(UserProfile, MonitoringProfileSource.res_id == UserProfile.res_id).
-        join(SourceUserSubscription, UserProfile.res_id == SourceUserSubscription.user_res_id).
         join(UserLastSeen, UserProfile.res_id == UserLastSeen.res_id)
     ).where(User.id == moderator_id)
 

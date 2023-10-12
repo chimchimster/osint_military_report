@@ -1,5 +1,7 @@
-from fastapi import APIRouter, File
+from fastapi import APIRouter
+from fastapi.responses import FileResponse
 
+from .utils import *
 from .database import *
 from .models import ClientSettings
 from .lxml_report import render_lxml_document
@@ -16,12 +18,14 @@ async def report_handler(item: ClientSettings):
     destructive_users_data = await get_destructive_users_data_mapped_to_moderator(moderator_id)
 
     normal_user_data = await get_normal_users_data_mapped_to_moderator(moderator_id)
-    print(normal_user_data)
-    print(await render_lxml_document(normal_user_data))
 
+    await render_lxml_document(normal_user_data)
 
-    return item
+    response_file = FileResponse(path='output.xlsx', filename='Отчет военнослужащие.xlsx', media_type='multipart/form-data')
 
+    # await remove_report()
+
+    return response_file
 
 __all__ = [
     'router',
