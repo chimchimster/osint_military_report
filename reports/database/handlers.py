@@ -1,10 +1,11 @@
-from typing import List
-
-from sqlalchemy import select, join, Sequence, Row, func, and_
+from sqlalchemy import select, join, literal, Sequence, Row, func, and_
 from sqlalchemy.sql.functions import coalesce
 
 from .models import *
 from .decorators import execute_transaction
+
+
+zero_literal = literal(0)
 
 
 @execute_transaction
@@ -16,7 +17,9 @@ async def get_destructive_users_data_mapped_to_moderator(
     session = kwargs.get('session')
 
     select_stmt = select(
-        UserProfile.res_id,
+        UserProfile,
+        UserLastSeen.time,
+        UserLastSeen.platform,
         coalesce(func.count(SourceUserSubscription.subscription_res_id), 0),
     ).group_by(UserProfile.res_id).select_from(
         join(User, UserMonitoringProfile, User.id == UserMonitoringProfile.id).
@@ -49,13 +52,16 @@ async def get_normal_users_data_mapped_to_moderator(
         UserProfile,
         UserLastSeen.time,
         UserLastSeen.platform,
+        zero_literal,
     ).select_from(
         join(User, UserMonitoringProfile, User.id == UserMonitoringProfile.id).
         join(MonitoringProfile, UserMonitoringProfile.profile_id == MonitoringProfile.profile_id).
         join(MonitoringProfileSource, UserMonitoringProfile.profile_id == MonitoringProfileSource.profile_id).
         join(UserProfile, MonitoringProfileSource.res_id == UserProfile.res_id).
         join(UserLastSeen, UserProfile.res_id == UserLastSeen.res_id)
-    ).where(User.id == moderator_id)
+    ).where(
+        User.id == moderator_id
+    )
 
     result = await session.execute(select_stmt)
 

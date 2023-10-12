@@ -61,13 +61,14 @@ async def prepare_data(
         profile: UserProfile,
         last_seen_time_unix: int,
         platform_type: int,
+        destructive_subscriptions_count: int,
 ):
 
     user_name, sex, info_json = profile.user_name, profile.sex, profile.info_json
 
     contacts, relation = json.loads(info_json).get('contacts'), json.loads(info_json).get('relation')
 
-    return [user_name, sex, contacts, relation, 0, last_seen_time_unix, platform_type]
+    return [user_name, sex, contacts, relation, destructive_subscriptions_count, last_seen_time_unix, platform_type]
 
 
 def render_xlsx_document(

@@ -1,12 +1,13 @@
-import asyncio
 import uuid
+import asyncio
 
 from pathlib import Path
-from datetime import datetime
 from typing import Final, List
 
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
+
+from pandas import concat
 
 from .utils import *
 from .database import *
@@ -17,6 +18,14 @@ router = APIRouter()
 
 REPORT_STACK_LOCK = asyncio.Lock()
 PREVIOUS_REPORTS_STACK: Final[List[str]] = []
+UNIQUE_IDENTIFIER_COLUMNS: Final[List[str]] = [
+        'Военнослужащий',
+        'Пол',
+        'Номер телефона',
+        'Социальные отношения',
+        'Время последнего входа в сеть',
+        'Платформа последнего входа в сеть'
+    ]
 
 
 @router.post('/report/')
@@ -33,11 +42,17 @@ async def report_handler(item: ClientSettings):
 
     normal_user_data = await get_normal_users_data_mapped_to_moderator(moderator_id)
 
-    dataframe = await generate_dataframe(normal_user_data)
+    dataframe_destructive = await generate_dataframe(destructive_users_data)
+    dataframe_normal = await generate_dataframe(normal_user_data)
+
+    dataframe_updated = dataframe_normal.merge(dataframe_destructive, on=UNIQUE_IDENTIFIER_COLUMNS, how='left')
+    dataframe_updated['Количество деструктивных подписок_x'].fillna(dataframe_updated['Количество деструктивных подписок_y'], inplace=True)
+    dataframe_updated = dataframe_updated.drop(['Количество деструктивных подписок_y'], axis=1)
+    dataframe_updated.rename(columns={'Количество деструктивных подписок_x': 'Количество деструктивных подписок'}, inplace=True)
 
     running_loop = asyncio.get_running_loop()
 
-    await running_loop.run_in_executor(None, render_xlsx_document, dataframe, report_path)
+    await running_loop.run_in_executor(None, render_xlsx_document, dataframe_updated, report_path)
 
     response_file = FileResponse(
         path=report_path,
