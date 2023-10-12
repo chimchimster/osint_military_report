@@ -81,7 +81,7 @@ def render_xlsx_document(
             for column in dataframe:
                 column_width = max(dataframe[column].astype(str).map(len).max(), len(column)) + 1
                 col_idx = dataframe.columns.get_loc(column)
-                writer.sheets['Профили пользователей'].set_column(col_idx, col_idx, column_length)
+                writer.sheets['Профили пользователей'].set_column(col_idx, col_idx, column_width)
 
     except FileNotFoundError:
         raise FileNotFoundError
