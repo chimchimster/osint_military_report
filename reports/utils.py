@@ -21,8 +21,6 @@ async def remove_report(
 
     for child in path_to_temp.iterdir():
         if child.name.endswith(report_file_name):
-            print(child)
-            await asyncio.sleep(5)
             child.unlink()
 
 
