@@ -1,4 +1,5 @@
 reports/database/.env
+.idea/
+*/__pycache__/
 __pycache__/
-reports/__pycache__/
-reports/database/__pycache__/
+

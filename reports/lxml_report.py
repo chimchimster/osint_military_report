@@ -25,7 +25,7 @@ async def generate_dataframe(
     platform_schema = await read_schema(schema_path, 'platform')
 
     dataframe = DataFrame(data=prepared_data, columns=[
-        'Военнослужащий',
+        'Имя в аккаунте',
         'Пол',
         'Номер телефона',
         'Социальные отношения',
@@ -78,6 +78,11 @@ def render_xlsx_document(
 
     try:
         with ExcelWriter(report_path, engine='xlsxwriter', mode='w') as writer:
-            dataframe.to_excel(writer,  sheet_name='Военнослужащие')
+            dataframe.to_excel(writer, sheet_name='Профили пользователей', index=False)
+            for column in dataframe:
+                column_width = max(dataframe[column].astype(str).map(len).max(), len(column)) + 1
+                col_idx = dataframe.columns.get_loc(column)
+                writer.sheets['Профили пользователей'].set_column(col_idx, col_idx, column_width)
+
     except FileNotFoundError:
         raise FileNotFoundError
