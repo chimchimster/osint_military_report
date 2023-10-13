@@ -1,4 +1,4 @@
-from sqlalchemy import select, join, Sequence, Row, func, case, text
+from sqlalchemy import select, join, Sequence, Row, func, case, text, desc
 from sqlalchemy.sql.functions import coalesce
 
 from .models import *
@@ -19,8 +19,8 @@ async def get_users_data_mapped_to_moderator(
         UserLastSeen.platform,
         coalesce(func.sum(
             case((SourceUserSubscription.subscription_res_id.in_(select(Alerts.res_id)), 1), else_=0)
-        ), 0).alias('s_c')
-    ).select_from(
+        ), 0).label('subscriptions_count')
+    ).order_by(desc(text('subscriptions_count'))).select_from(
         join(User, UserMonitoringProfile, User.id == UserMonitoringProfile.id).
         join(MonitoringProfile, UserMonitoringProfile.profile_id == MonitoringProfile.profile_id).
         join(MonitoringProfileSource, UserMonitoringProfile.profile_id == MonitoringProfileSource.profile_id).
@@ -28,9 +28,9 @@ async def get_users_data_mapped_to_moderator(
         outerjoin(SourceUserSubscription, UserProfile.res_id == SourceUserSubscription.user_res_id).
         outerjoin(UserLastSeen, UserProfile.res_id == UserLastSeen.res_id).
         outerjoin(Alerts, Alerts.res_id == UserLastSeen.res_id)
-    ).where(User.id == moderator_id).group_by(
+    ).group_by(
             UserProfile.user_name, UserLastSeen.time, UserLastSeen.platform
-        ).order_by(text('s_c'))
+        ).filter(User.id == moderator_id)
 
     result = await session.execute(select_stmt)
 
