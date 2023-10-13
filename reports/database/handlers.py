@@ -35,3 +35,27 @@ async def get_users_data_mapped_to_moderator(
     result = await session.execute(select_stmt)
 
     return result.fetchall()
+
+"""
+SQL запрос в базу 
+SELECT
+    sp2.user_name,
+    uls.time,
+    uls.platform,
+    SUM(
+        CASE WHEN sbc1.subscription_res_id IN (
+        	SELECT alerts.res_id FROM alerts
+    ) THEN 1 ELSE 0 END
+       ) AS alerts_count
+FROM user AS u
+	INNER JOIN user_monitoring_profile ON u.id = user_monitoring_profile.id
+	INNER JOIN monitoring_profile ON monitoring_profile.profile_id = user_monitoring_profile.profile_id
+	INNER JOIN monitoring_profile_source ON user_monitoring_profile.profile_id = monitoring_profile_source.profile_id
+	INNER JOIN source_user_profile AS sp2 ON sp2.res_id = monitoring_profile_source.res_id
+	LEFT JOIN source_user_subscription AS sbc1 ON sbc1.user_res_id = sp2.res_id
+	LEFT JOIN user_last_seen AS uls ON uls.res_id = sbc1.user_res_id
+	LEFT JOIN alerts as alrt ON alrt.res_id = uls.res_id
+WHERE u.id = 2
+GROUP BY sp2.user_name, uls.time, uls.platform
+ORDER BY alerts_count DESC; 
+"""
