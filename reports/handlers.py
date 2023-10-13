@@ -7,8 +7,6 @@ from typing import Final, List
 from fastapi import APIRouter
 from fastapi.responses import FileResponse
 
-from pandas import concat
-
 from .utils import *
 from .database import *
 from .models import ClientSettings
@@ -38,21 +36,13 @@ async def report_handler(item: ClientSettings):
     report_file_name: str = str(uuid.uuid4()) + '.xlsx'
     report_path: Path = path_to_temp / report_file_name
 
-    destructive_users_data = await get_destructive_users_data_mapped_to_moderator(moderator_id)
+    users_data = await get_users_data_mapped_to_moderator(moderator_id)
 
-    normal_user_data = await get_normal_users_data_mapped_to_moderator(moderator_id)
-
-    dataframe_destructive = await generate_dataframe(destructive_users_data)
-    dataframe_normal = await generate_dataframe(normal_user_data)
-
-    dataframe_updated = dataframe_normal.merge(dataframe_destructive, on=UNIQUE_IDENTIFIER_COLUMNS, how='left')
-    dataframe_updated['Количество деструктивных подписок_x'].fillna(dataframe_updated['Количество деструктивных подписок_y'], inplace=True)
-    dataframe_updated = dataframe_updated.drop(['Количество деструктивных подписок_y'], axis=1)
-    dataframe_updated.rename(columns={'Количество деструктивных подписок_x': 'Количество деструктивных подписок'}, inplace=True)
+    dataframe = await generate_dataframe(users_data)
 
     running_loop = asyncio.get_running_loop()
 
-    await running_loop.run_in_executor(None, render_xlsx_document, dataframe_updated, report_path)
+    await running_loop.run_in_executor(None, render_xlsx_document, dataframe, report_path)
 
     response_file = FileResponse(
         path=report_path,

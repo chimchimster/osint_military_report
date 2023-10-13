@@ -1,7 +1,6 @@
 import sys
 import json
 import pathlib
-import asyncio
 import aiofiles
 
 from typing import List, Dict, Union
