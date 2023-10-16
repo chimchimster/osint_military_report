@@ -1,9 +1,11 @@
-import asyncio
 import uuid
+import asyncio
+from hashlib import md5
 from datetime import datetime
 
 from pathlib import Path
-from typing import List, Final
+from typing import Final, Dict
+from collections import defaultdict
 
 from fastapi.responses import FileResponse
 
@@ -15,7 +17,7 @@ from .utils import *
 
 
 REPORT_STACK_LOCK = asyncio.Lock()
-PREVIOUS_REPORTS_STACK: Final[List[str]] = []
+PREVIOUS_REPORTS_STACK: Final[Dict] = defaultdict(list)
 
 
 class ReportDistributor:
@@ -36,7 +38,7 @@ class ReportDistributor:
         r_format = self.resp_obj.r_format
         user_id = self.resp_obj.user_id
 
-        report_file_name: str = str(uuid.uuid4()) + '.' + r_format
+        report_file_name: str = f'{uuid.uuid4()}-{md5(str(datetime.now()).encode()).hexdigest()}.{r_format}'
         report_path: Path = self.path_to_temp / report_file_name
 
         if r_type == 1:
@@ -69,10 +71,10 @@ class ReportDistributor:
         )
 
         async with REPORT_STACK_LOCK:
-            if PREVIOUS_REPORTS_STACK:
-                prev_report_name = PREVIOUS_REPORTS_STACK.pop()
+            if PREVIOUS_REPORTS_STACK[user_id]:
+                prev_report_name = PREVIOUS_REPORTS_STACK[user_id].pop()
                 await remove_report(self.path_to_temp, prev_report_name)
 
-            PREVIOUS_REPORTS_STACK.append(report_file_name)
+            PREVIOUS_REPORTS_STACK[user_id].append(report_file_name)
 
         return response_file

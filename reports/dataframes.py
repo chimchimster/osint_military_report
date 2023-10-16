@@ -61,7 +61,9 @@ async def generate_dataframe_for_users(
     return dataframe
 
 
-async def generate_dataframe_for_subscriptions():
+async def generate_dataframe_for_subscriptions(
+        subscription_data: List[List]
+):
     pass
 
 
