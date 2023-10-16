@@ -10,20 +10,12 @@ from fastapi.responses import FileResponse
 from .utils import *
 from .database import *
 from .models import ClientSettings
-from .lxml_report import render_xlsx_document, generate_dataframe
+from .xlsx_report import *
 
 router = APIRouter()
 
 REPORT_STACK_LOCK = asyncio.Lock()
 PREVIOUS_REPORTS_STACK: Final[List[str]] = []
-UNIQUE_IDENTIFIER_COLUMNS: Final[List[str]] = [
-        'Военнослужащий',
-        'Пол',
-        'Номер телефона',
-        'Социальные отношения',
-        'Время последнего входа в сеть',
-        'Платформа последнего входа в сеть'
-    ]
 
 
 @router.post('/report/')
