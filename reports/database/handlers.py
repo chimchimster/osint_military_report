@@ -1,4 +1,4 @@
-from sqlalchemy import select, join, Sequence, Row, func, case, text, desc
+from sqlalchemy import select, join, Sequence, Row, func, case, text, desc, distinct
 from sqlalchemy.sql.functions import coalesce
 
 from .models import *
@@ -52,7 +52,7 @@ async def get_subscriptions_data_mapped_to_moderator(
         func.avg(Posts.lang),
         func.avg(Posts.sentiment),
         SourceSubscriptionProfile.is_closed,
-        func.count(Alerts.alert_type).distinct().label('alerts_count')
+        func.count(distinct(Alerts.alert_type)).label('alerts_count')
     ).order_by(
         desc(text('alerts_count')),
         desc(text('subscription_title'))

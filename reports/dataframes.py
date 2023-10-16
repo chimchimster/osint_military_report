@@ -72,7 +72,7 @@ async def generate_dataframe_for_subscriptions(
         ) for subscription_data in subscriptions_data
     ]
 
-    prepared_data = asyncio.gather(*tasks)
+    prepared_data = await asyncio.gather(*tasks)
 
     dataframe = DataFrame(data=prepared_data, columns=[
         'Сообщество',
@@ -82,7 +82,7 @@ async def generate_dataframe_for_subscriptions(
         'Статус',
     ])
 
-
+    return dataframe
 
 
 async def prepare_subscription_data(
