@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, SmallInteger, Date, Text, JSON, BigInteger
+from sqlalchemy import Column, Integer, ForeignKey, String, SmallInteger, Date, Text, JSON, BigInteger, Boolean
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -79,6 +79,33 @@ class Alerts(Base):
     __tablename__ = 'alerts'
 
     res_id = Column(Integer, primary_key=True)
+    alert_type = Column(Integer)
+
+
+class SourceSubscriptionProfile(Base):
+
+    __tablename__ = 'source_subscription_profile'
+
+    res_id = Column(Integer, primary_key=True)
+    subscription_name = Column(String(length=255))
+    is_closed = Column(Boolean)
+
+
+class Source(Base):
+
+    __tablename__ = 'source'
+
+    res_id = Column(Integer, primary_key=True)
+    source_id = Column(Integer)
+
+
+class Posts(Base):
+
+    __tablename__ = 'posts'
+
+    res_id = Column(Integer, primary_key=True)
+    lang = Column(Integer)
+    sentiment = Column(Integer)
 
 
 __all__ = [
@@ -90,4 +117,7 @@ __all__ = [
     'SourceUserSubscription',
     'UserLastSeen',
     'Alerts',
+    'SourceSubscriptionProfile',
+    'Source',
+    'Posts',
 ]
