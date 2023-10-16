@@ -10,6 +10,9 @@ from .database import *
 from .utils import *
 
 
+schema_path = Path.cwd() / 'reports' / 'schemas' / 'map.JSON'
+
+
 async def generate_dataframe_for_users(
         users_data: List[List],
 ) -> DataFrame:
@@ -22,8 +25,6 @@ async def generate_dataframe_for_users(
 
     prepared_data = await asyncio.gather(*tasks)
 
-    schema_path = Path.cwd() / 'reports' / 'schemas' / 'map.JSON'
-
     sex_schema = await read_schema(schema_path, 'sex')
     relation_schema = await read_schema(schema_path, 'relation')
     platform_schema = await read_schema(schema_path, 'platform')
@@ -35,7 +36,7 @@ async def generate_dataframe_for_users(
         'Социальные отношения',
         'Количество деструктивных подписок',
         'Время последнего входа в сеть',
-        'Платформа последнего входа в сеть'
+        'Платформа последнего входа в сеть',
     ])
 
     dataframe['Пол'] = dataframe['Пол'].fillna(0).astype(int)
@@ -62,9 +63,37 @@ async def generate_dataframe_for_users(
 
 
 async def generate_dataframe_for_subscriptions(
-        subscription_data: List[List]
-):
-    pass
+        subscriptions_data: List[List]
+) -> DataFrame:
+
+    tasks = [
+        asyncio.create_task(
+            prepare_subscription_data(*subscription_data)
+        ) for subscription_data in subscriptions_data
+    ]
+
+    prepared_data = asyncio.gather(*tasks)
+
+    dataframe = DataFrame(data=prepared_data, columns=[
+        'Сообщество',
+        'Язык',
+        'Тональность',
+        'Доступность',
+        'Статус',
+    ])
+
+
+
+
+async def prepare_subscription_data(
+        subscription_title: str,
+        posts_lang: int,
+        posts_sentiment: int,
+        availability: bool,
+        status: int,
+) -> List:
+
+    return [subscription_title, posts_lang, posts_sentiment, availability, status]
 
 
 async def prepare_user_data(
@@ -72,7 +101,7 @@ async def prepare_user_data(
         last_seen_time_unix: int,
         platform_type: int,
         destructive_subscriptions_count: int,
-):
+) -> List:
 
     user_name, sex, info_json = profile.user_name, profile.sex, profile.info_json
 
