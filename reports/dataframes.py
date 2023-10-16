@@ -1,5 +1,6 @@
 import json
 import asyncio
+import math
 from pathlib import Path
 
 from typing import List
@@ -74,6 +75,9 @@ async def generate_dataframe_for_subscriptions(
 
     prepared_data = await asyncio.gather(*tasks)
 
+    langs_schema = await read_schema(schema_path, 'langs')
+    sentiment_schema = await read_schema(schema_path, 'sentiment')
+
     dataframe = DataFrame(data=prepared_data, columns=[
         'Сообщество',
         'Язык',
@@ -81,6 +85,9 @@ async def generate_dataframe_for_subscriptions(
         'Доступность',
         'Статус',
     ])
+
+    dataframe['Язык'] = dataframe['Язык'].fillna('Неопределен').astype(str).map(langs_schema)
+    dataframe['Тональность'] = dataframe['Тональность'].astype(str).map(sentiment_schema)
 
     return dataframe
 
@@ -92,6 +99,13 @@ async def prepare_subscription_data(
         availability: bool,
         status: int,
 ) -> List:
+
+    availability = 'Сообщество доступно' if not availability else 'Сообщество закрыто либо удалено'
+
+    status = 'Содержит деструктивный контент' if status > 0 else 'Не содержит деструктивный контент'
+
+    posts_lang = math.ceil(posts_lang) if posts_lang % 10 >= 5 else math.floor(posts_lang)
+    posts_sentiment = math.ceil(posts_sentiment) if posts_sentiment % 10 >= 5 else math.floor(posts_sentiment)
 
     return [subscription_title, posts_lang, posts_sentiment, availability, status]
 

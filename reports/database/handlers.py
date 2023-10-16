@@ -1,4 +1,5 @@
 from sqlalchemy import select, join, Sequence, Row, func, case, text, desc, distinct
+from sqlalchemy.orm import aliased
 from sqlalchemy.sql.functions import coalesce
 
 from .models import *
@@ -49,7 +50,16 @@ async def get_subscriptions_data_mapped_to_moderator(
 
     select_stmt = select(
         coalesce(SourceSubscriptionProfile.subscription_name, Source.source_id).label('subscription_title'),
-        func.avg(Posts.lang),
+        # Обработать языки
+        select(
+            func.count().label('mode_lang')
+        ).order_by(desc(text('mode_lang')))
+        .select_from(
+            join(Posts, SourceSubscriptionProfile, Posts.res_id == SourceSubscriptionProfile.res_id)
+        ).filter(SourceSubscriptionProfile.res_id == Posts.res_id)
+        .group_by(Posts.lang)
+        .limit(1)
+        .as_scalar(),
         func.avg(Posts.sentiment),
         SourceSubscriptionProfile.is_closed,
         func.count(distinct(Alerts.alert_type)).label('alerts_count')
@@ -105,7 +115,17 @@ ORDER BY alerts_count DESC;
 select
     coalesce(source_subscription_profile.subscription_name, source.source_id) as subscription_title,
     avg(posts.sentiment) as subscription_sentiment,
-    avg(posts.lang) as subscription_language,
+    (select lang
+        from (
+            select count(*) as cnt
+            from posts
+            	inner join source_subscription_profile on posts.res_id = source_subscription_profile.res_id
+            where source_subscription_profile.res_id = posts.res_id
+            group by posts.lang
+            order by cnt desc
+            limit 1
+        ) AS subquery
+    ) AS mode_lang,
     count(posts.res_id) as subscription_posts_count,
     source_subscription_profile.is_closed as subscription_availability,
     count(distinct alerts.alert_type) as subscription_status
