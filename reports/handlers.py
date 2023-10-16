@@ -13,6 +13,7 @@ async def report_handler(item: ClientSettings):
 
     response_file = await distributor.generate_report()
 
+
     return response_file
 
 
