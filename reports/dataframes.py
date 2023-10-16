@@ -1,20 +1,24 @@
 import json
 import asyncio
-
 from pathlib import Path
-from pandas import DataFrame, ExcelWriter, to_datetime
 
 from typing import List
+
+from pandas import to_datetime, DataFrame
 
 from .database import *
 from .utils import *
 
 
-async def generate_dataframe(
+async def generate_dataframe_for_users(
         users_data: List[List],
 ) -> DataFrame:
 
-    tasks = [asyncio.create_task(prepare_data(*user_data)) for user_data in users_data]
+    tasks = [
+        asyncio.create_task(
+            prepare_user_data(*user_data)
+        ) for user_data in users_data
+    ]
 
     prepared_data = await asyncio.gather(*tasks)
 
@@ -57,7 +61,11 @@ async def generate_dataframe(
     return dataframe
 
 
-async def prepare_data(
+async def generate_dataframe_for_subscriptions():
+    pass
+
+
+async def prepare_user_data(
         profile: UserProfile,
         last_seen_time_unix: int,
         platform_type: int,
@@ -71,18 +79,7 @@ async def prepare_data(
     return [user_name, sex, contacts, relation, destructive_subscriptions_count, last_seen_time_unix, platform_type]
 
 
-def render_xlsx_document(
-        dataframe: DataFrame,
-        report_path: Path,
-) -> None:
-
-    try:
-        with ExcelWriter(report_path, engine='xlsxwriter', mode='w') as writer:
-            dataframe.to_excel(writer, sheet_name='Профили пользователей', index=False)
-            for column in dataframe:
-                column_width = max(dataframe[column].astype(str).map(len).max(), len(column)) + 1
-                col_idx = dataframe.columns.get_loc(column)
-                writer.sheets['Профили пользователей'].set_column(col_idx, col_idx, column_width)
-
-    except FileNotFoundError:
-        raise FileNotFoundError
+__all__ = [
+    'generate_dataframe_for_subscriptions',
+    'generate_dataframe_for_users',
+]
