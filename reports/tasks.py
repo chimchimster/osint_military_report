@@ -62,7 +62,7 @@ class ReportDistributor:
 
             await running_loop.run_in_executor(None, render_xlsx_document, dataframe, report_path)
 
-        filename = f'Отчет от {datetime.now()} военнослужащие.{r_format}'
+        filename = f'Отчет от {datetime.now().strftime("%d-%m-%Y %H:%M:%S")} военнослужащие.{r_format}'
 
         response_file = FileResponse(
             path=report_path,
