@@ -11,7 +11,7 @@ from .database import *
 from .utils import *
 
 
-schema_path = Path.cwd() / 'reports' / 'schemas' / 'map.JSON'
+schema_path = Path('osint_military_report') / 'reports' / 'schemas' / 'map.JSON'
 
 
 async def generate_dataframe_for_users(
