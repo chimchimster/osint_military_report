@@ -76,7 +76,7 @@ async def get_subscriptions_data_mapped_to_moderator(
         join(SourceUserSubscription, MonitoringProfileSource.res_id == SourceUserSubscription.user_res_id).
         join(SourceSubscriptionProfile, SourceUserSubscription.subscription_res_id == SourceSubscriptionProfile.res_id).
         join(Source, Source.res_id == SourceSubscriptionProfile.res_id).
-        join(Posts, Posts.res_id == SourceSubscriptionProfile.res_id).
+        outerjoin(Posts, Posts.res_id == SourceSubscriptionProfile.res_id).
         outerjoin(Alerts, Alerts.res_id == SourceSubscriptionProfile.res_id)
     ).group_by(
         SourceSubscriptionProfile.res_id, Alerts.res_id

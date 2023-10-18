@@ -104,8 +104,15 @@ async def prepare_subscription_data(
 
     status = 'Содержит деструктивный контент' if status > 0 else 'Не содержит деструктивный контент'
 
-    posts_lang = math.ceil(posts_lang) if posts_lang % 10 >= 5 else math.floor(posts_lang)
-    posts_sentiment = math.ceil(posts_sentiment) if posts_sentiment % 10 >= 5 else math.floor(posts_sentiment)
+    try:
+        posts_lang = math.ceil(posts_lang) if posts_lang % 10 >= 5 else math.floor(posts_lang)
+    except TypeError:
+        posts_lang = 0
+
+    try:
+        posts_sentiment = math.ceil(posts_sentiment) if posts_sentiment % 10 >= 5 else math.floor(posts_sentiment)
+    except TypeError:
+        posts_sentiment = 0
 
     return [subscription_title, posts_lang, posts_sentiment, availability, status]
 
