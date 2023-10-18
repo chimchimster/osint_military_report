@@ -50,32 +50,19 @@ async def get_subscriptions_data_mapped_to_moderator(
 
     select_stmt = select(
         coalesce(SourceSubscriptionProfile.subscription_name, Source.source_id).label('subscription_title'),
-
-        # (select lang
-        #         from (
-        #             select count(*) as cnt
-        #             from posts
-        #             	inner join source_subscription_profile on posts.res_id = source_subscription_profile.res_id
-        #             where source_subscription_profile.res_id = posts.res_id
-        #             group by posts.lang
-        #             order by cnt desc
-        #             limit 1
-        #         ) AS subquery
-        #     ) AS mode_lang
-
-        select(
-            text('lang')
-        ).select_from(
-            select(
-                func.count().label('cnt')
-            ).select_from(
-                join(Posts, SourceSubscriptionProfile, Posts.res_id == SourceSubscriptionProfile.res_id)
-            ).where(SourceSubscriptionProfile.res_id == Posts.res_id).
-            group_by(Posts.lang).
-            order_by(desc(text('cnt'))).
-            limit(1).
-            subquery('subquery')
-        ).subquery('mode_lang'),
+        text("""
+        (select lang
+             from (
+                 select count(*) as cnt
+                 from posts
+                    inner join source_subscription_profile on posts.res_id = source_subscription_profile.res_id
+                 where source_subscription_profile.res_id = posts.res_id
+                 group by posts.lang
+                 order by cnt desc
+                 limit 1
+             ) AS subquery
+         ) AS mode_lang
+        """),
         func.avg(Posts.sentiment),
         SourceSubscriptionProfile.is_closed,
         func.count(distinct(Alerts.alert_type)).label('alerts_count')
@@ -98,7 +85,7 @@ async def get_subscriptions_data_mapped_to_moderator(
     )
 
     result = await session.execute(select_stmt)
-    print(result.fetchall())
+
     return result.fetchall()
 
 
