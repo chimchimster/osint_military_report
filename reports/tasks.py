@@ -24,7 +24,7 @@ class ReportDistributor:
 
     __slots__ = ('resp_obj', 'report_path',)
 
-    path_to_temp: Path = Path('osint_military_report') / 'reports' / 'temp'
+    path_to_temp: Path = Path.cwd() / 'reports' / 'temp'
 
     def __init__(self, resp_obj: ClientSettings):
         self.resp_obj = resp_obj

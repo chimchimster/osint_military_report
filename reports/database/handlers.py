@@ -11,7 +11,6 @@ async def get_users_data_mapped_to_moderator(
         moderator_id: int,
         **kwargs,
 ) -> Sequence[Row]:
-
     session = kwargs.get('session')
 
     select_stmt = select(
@@ -45,11 +44,19 @@ async def get_subscriptions_data_mapped_to_moderator(
         moderator_id: int,
         **kwargs,
 ) -> Sequence[Row]:
-
     session = kwargs.get('session')
 
     select_stmt = select(
         coalesce(SourceSubscriptionProfile.subscription_name, Source.source_id).label('subscription_title'),
+        case(
+            (
+                Source.soc_type == 1, func.concat('https://vk.com/public', Source.source_id)),
+            else_=func.concat(
+                'https://instagram.com/',
+                text("json_extract(source_subscription_profile.info_json, '$.username')")
+            )
+        ),
+        Source.soc_type,
         text("""
         (select lang
              from (
@@ -65,7 +72,7 @@ async def get_subscriptions_data_mapped_to_moderator(
         """),
         func.avg(Posts.sentiment),
         SourceSubscriptionProfile.is_closed,
-        func.count(distinct(Alerts.alert_type)).label('alerts_count')
+        func.group_concat(distinct(Alerts.alert_type)).label('alerts_count')
     ).order_by(
         desc(text('alerts_count')),
         desc(text('subscription_title'))
@@ -117,6 +124,13 @@ ORDER BY alerts_count DESC;
 Запрос в базу для групп
 select
     coalesce(source_subscription_profile.subscription_name, source.source_id) as subscription_title,
+    (case 
+    when source.soc_type = 1 then 
+        concat('https://vk.com/', source.source_id) 
+    else 
+        concat('https://instagram.com/', json_extract(source_subscription_profile.info_json, '$.username')) 
+	end) as link,
+    source.soc_type as social_type,
     avg(posts.sentiment) as subscription_sentiment,
     (select lang
         from (
@@ -131,7 +145,7 @@ select
     ) AS mode_lang,
     count(posts.res_id) as subscription_posts_count,
     source_subscription_profile.is_closed as subscription_availability,
-    count(distinct alerts.alert_type) as subscription_status
+    group_concat(distinct alerts.alert_type) as subscription_status
 from user
   inner join user_monitoring_profile on user_monitoring_profile.id = user.id
   inner join monitoring_profile_source ON user_monitoring_profile.profile_id = monitoring_profile_source.profile_id
@@ -139,9 +153,9 @@ from user
   inner join source_user_subscription on source_user_profile.res_id = source_user_subscription.user_res_id
   inner join source_subscription_profile on source_subscription_profile.res_id = source_user_subscription.subscription_res_id
   inner join source on source.res_id = source_subscription_profile.res_id
-  inner join posts on source_subscription_profile.res_id = posts.res_id
+  left join posts on source_subscription_profile.res_id = posts.res_id
   left join alerts on source_subscription_profile.res_id = alerts.res_id
-where user.id = 4
+where user.id = 1
 group by source_subscription_profile.res_id, alerts.res_id
-order by subscription_status desc, subscription_title desc;
+order by subscription_status desc, subscription_title desc, source.soc_type desc;
 """

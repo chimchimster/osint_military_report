@@ -8,7 +8,7 @@ def render_xlsx_document(
 ) -> None:
 
     try:
-        with ExcelWriter(report_path, engine='xlsxwriter', mode='w') as writer:
+        with ExcelWriter(report_path, engine='xlsxwriter', mode='w', engine_kwargs={'options': {'strings_to_urls': False}}) as writer:
             dataframe.to_excel(writer, sheet_name='военнослужащие', index=False)
             for column in dataframe:
                 column_width = max(dataframe[column].astype(str).map(len).max(), len(column)) + 1
