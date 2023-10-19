@@ -23,6 +23,11 @@ STATUSES: Final[Dict] = {
 async def generate_dataframe_for_users(
         users_data: List[List],
 ) -> DataFrame:
+    """
+
+    :param users_data:
+    :return:
+    """
     tasks = [
         asyncio.create_task(
             prepare_user_data(*user_data)
@@ -64,13 +69,18 @@ async def generate_dataframe_for_users(
     dataframe['Время последнего входа в сеть'] = to_datetime(dataframe['Время последнего входа в сеть'], unit='s')
     dataframe['Время последнего входа в сеть'] = (dataframe['Время последнего входа в сеть']
                                                   .dt.strftime('%d-%m-%Y %H:%M:%S'))
-
     return dataframe
 
 
 async def generate_dataframe_for_subscriptions(
         subscriptions_data: List[List]
 ) -> DataFrame:
+    """
+
+    :param subscriptions_data:
+    :return:
+    """
+
     tasks = [
         asyncio.create_task(
             prepare_subscription_data(*subscription_data)
@@ -109,6 +119,17 @@ async def prepare_subscription_data(
         availability: bool,
         status: str,
 ) -> List:
+    """
+
+    :param subscription_title:
+    :param subscription_link:
+    :param soc_type:
+    :param posts_lang:
+    :param posts_sentiment:
+    :param availability:
+    :param status:
+    :return:
+    """
     availability = 'Сообщество доступно' if not availability else 'Сообщество закрыто либо удалено'
 
     if status:
@@ -133,9 +154,23 @@ async def prepare_user_data(
         platform_type: int,
         destructive_subscriptions_count: int,
 ) -> List:
+    """
+
+    :param profile:
+    :param last_seen_time_unix:
+    :param platform_type:
+    :param destructive_subscriptions_count:
+    :return:
+    """
     user_name, sex, info_json = profile.user_name, profile.sex, profile.info_json
 
-    contacts, relation = json.loads(info_json).get('contacts'), json.loads(info_json).get('relation')
+    try:
+        relation = json.loads(info_json).get('relation')
+    except TypeError:
+        info_json = json.dumps(info_json)
+        relation = json.loads(info_json).get('relation')
+
+    contacts = json.loads(info_json).get('contacts')
 
     return [user_name, sex, contacts, relation, destructive_subscriptions_count, last_seen_time_unix, platform_type]
 

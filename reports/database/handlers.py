@@ -53,7 +53,7 @@ async def get_subscriptions_data_mapped_to_moderator(
                 Source.soc_type == 1, func.concat('https://vk.com/public', Source.source_id)),
             else_=func.concat(
                 'https://instagram.com/',
-                text("json_extract(source_subscription_profile.info_json, '$.username')")
+                text("""trim(both '"' from json_extract(source_subscription_profile.info_json, '$.username'))""")
             )
         ),
         Source.soc_type,
