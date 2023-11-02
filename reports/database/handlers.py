@@ -96,6 +96,33 @@ async def get_subscriptions_data_mapped_to_moderator(
     return result.fetchall()
 
 
+@execute_transaction
+async def get_users_data_for_counters(moderator_id: int, **kwargs) -> Sequence[Row]:
+    session = kwargs.get('session')
+
+    select_stmt = select(
+        UserMonitoringProfile.profile_id,
+        MonitoringProfileSource.res_id,
+        SourceUserSubscription.subscription_res_id,
+        Source.soc_type,
+        Source.source_type,
+        Alerts.alert_type
+    ).select_from(
+        join(
+            UserMonitoringProfile,
+            MonitoringProfileSource,
+            MonitoringProfileSource.profile_id == UserMonitoringProfile.profile_id
+        ).
+        outerjoin(SourceUserSubscription, SourceUserSubscription.user_res_id == MonitoringProfileSource.res_id).
+        outerjoin(Source, SourceUserSubscription.subscription_res_id == Source.res_id).
+        outerjoin(Alerts, Alerts.res_id == SourceUserSubscription.subscription_res_id)
+    ).filter(
+        UserMonitoringProfile.id == moderator_id
+    )
+
+    result = await session.execute(select_stmt)
+    return result.fetchall()
+
 """
 SQL запрос в базу для пользователей
 SELECT
@@ -158,4 +185,14 @@ from user
 where user.id = 1
 group by source_subscription_profile.res_id, alerts.res_id
 order by subscription_status desc, subscription_title desc, source.soc_type desc;
+"""
+
+"""
+SELECT ump.profile_id, mps.res_id, sus.user_res_id, sus.subscription_res_id, s.soc_type, s.source_type, a.alert_type
+FROM user_monitoring_profile AS ump
+LEFT JOIN monitoring_profile_source AS mps ON ump.profile_id = mps.profile_id
+LEFT JOIN source_user_subscription as sus ON sus.user_res_id = mps.res_id
+LEFT JOIN source as s ON sus.subscription_res_id = s.res_id
+LEFT JOIN alerts as a ON a.res_id = sus.subscription_res_id
+WHERE ump.id = moderator_id;
 """

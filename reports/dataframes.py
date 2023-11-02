@@ -5,6 +5,7 @@ from pathlib import Path
 
 from typing import List, Final, Dict
 
+import pandas as pd
 from pandas import to_datetime, DataFrame
 
 from .database import *
@@ -175,7 +176,21 @@ async def prepare_user_data(
     return [user_name, sex, contacts, relation, destructive_subscriptions_count, last_seen_time_unix, platform_type]
 
 
+async def generate_dataframe_for_counters(subscriptions_data: List[List]):
+    return pd.DataFrame(
+        subscriptions_data,
+        columns=[
+            'profile_id',
+            'user_res_id',
+            'subscription_res_id',
+            'soc_type',
+            'source_type',
+            'alert_type'
+        ]
+    )
+
 __all__ = [
     'generate_dataframe_for_subscriptions',
     'generate_dataframe_for_users',
+    'generate_dataframe_for_counters',
 ]

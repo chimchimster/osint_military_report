@@ -12,16 +12,17 @@ from fastapi.responses import FileResponse
 from .models import ClientSettings
 from .database import *
 from .xlsx_report import *
+from .csv_report import *
+from .pptx_report import *
 from .dataframes import *
 from .utils import *
 
-
 REPORT_STACK_LOCK = asyncio.Lock()
 PREVIOUS_REPORTS_STACK: Final[Dict] = defaultdict(list)
+PATH_TO_TEMPLATE: Path = Path.cwd() / 'reports' / 'templates'
 
 
 class ReportDistributor:
-
     __slots__ = ('resp_obj', 'report_path',)
 
     path_to_temp: Path = Path.cwd() / 'reports' / 'temp'
@@ -41,7 +42,12 @@ class ReportDistributor:
         report_file_name: str = f'{uuid.uuid4()}-{md5(str(datetime.now()).encode()).hexdigest()}.{r_format}'
         report_path: Path = self.path_to_temp / report_file_name
 
-        if r_type == 1:
+        if r_format == 'pptx':
+            users_data = await get_users_data_for_counters(user_id)
+
+            dataframe = await generate_dataframe_for_counters(users_data)
+
+        elif r_type == 1:
 
             users_data = await get_users_data_mapped_to_moderator(user_id)
 
@@ -58,9 +64,15 @@ class ReportDistributor:
 
         running_loop = asyncio.get_running_loop()
 
-        if r_format == 'xlsx':
+        if r_format == 'pptx':
+            await running_loop.run_in_executor(None, render_pptx_document, dataframe, report_path,
+                                               PATH_TO_TEMPLATE / 'pptx_template.pptx')
 
+        if r_format == 'xlsx':
             await running_loop.run_in_executor(None, render_xlsx_document, dataframe, report_path)
+
+        if r_format == 'csv':
+            await running_loop.run_in_executor(None, render_csv_document, dataframe, report_path)
 
         filename = f'Отчет от {datetime.now().strftime("%d-%m-%Y %H:%M:%S")} военнослужащие.{r_format}'
 

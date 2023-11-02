@@ -98,6 +98,7 @@ class Source(Base):
     res_id = Column(Integer, primary_key=True)
     source_id = Column(Integer)
     soc_type = Column(Integer)
+    source_type = Column(Integer)
 
 
 class Posts(Base):
