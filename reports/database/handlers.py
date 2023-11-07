@@ -196,3 +196,22 @@ LEFT JOIN source as s ON sus.subscription_res_id = s.res_id
 LEFT JOIN alerts as a ON a.res_id = sus.subscription_res_id
 WHERE ump.id = moderator_id;
 """
+
+"""
+НА ДОРАБОТКЕ
+select 
+    MP.full_name as f_name, 
+    group_concat(
+        case when S.source_type = 1 and S.soc_type = 1 then concat('https://vk.com/id', S.source_id) else null end
+        order by S.res_id asc separator ' '
+    ) as vk_res_ids,
+    group_concat(
+      concat('https://instagram.com/', json_unquote(json_extract(SSP.info_json, '$.username')))
+        order by SSP.res_id asc separator ' '
+    ) as inst_res_ids
+from monitoring_profile as MP
+    left join monitoring_profile_source as MPS using(profile_id)
+    left join source as S using(res_id)
+    left join source_subscription_profile as SSP using(res_id)
+group by f_name;
+"""
