@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div>
+            <h1 class="title">Топ-10 сообществ содержащих деструктивный контент</h1>
+        </div>
+        <table class="table">
+            <tr class="table_tr">
+                <th class="table_th">
+                    Название сообщества
+                </th>
+                <th class="table_th">
+                    Количество подписчиков
+                </th>
+            </tr>
+            {% for community_name, members_count in data %}
+            <tr class="table_tr">
+                <td class="table_td">
+                    {{ community_name }}
+                </td>
+                <td class="table_td">
+                    {{ members_count }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

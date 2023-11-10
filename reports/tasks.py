@@ -14,18 +14,19 @@ from .database import *
 from .xlsx_report import *
 from .csv_report import *
 from .pptx_report import *
+from .pdf_report import *
 from .dataframes import *
 from .utils import *
 
 REPORT_STACK_LOCK = asyncio.Lock()
 PREVIOUS_REPORTS_STACK: Final[Dict] = defaultdict(list)
-PATH_TO_TEMPLATE: Path = Path.cwd() / 'reports' / 'templates'
 
+PATH_TO_TEMPLATE: Path = Path('osint_military_report') / 'reports' / 'templates'
 
 class ReportDistributor:
     __slots__ = ('resp_obj', 'report_path',)
 
-    path_to_temp: Path = Path.cwd() / 'reports' / 'temp'
+    path_to_temp: Path = Path('osint_military_report') / 'reports' / 'temp'
 
     def __init__(self, resp_obj: ClientSettings):
         self.resp_obj = resp_obj
@@ -47,6 +48,9 @@ class ReportDistributor:
 
             dataframe = await generate_dataframe_for_counters(users_data)
 
+        elif r_format == 'pdf':
+            top_10_sources_data = await top_10_sources()
+
         elif r_type == 1:
 
             users_data = await get_users_data_mapped_to_moderator(user_id)
@@ -63,11 +67,12 @@ class ReportDistributor:
             raise RuntimeError(f'Непредусмотренный тип {r_type} отчета.')
 
         running_loop = asyncio.get_running_loop()
+        if r_format == 'pdf':
+            await running_loop.run_in_executor(None, render_pdf_document, top_10_sources_data, report_path)
 
         if r_format == 'pptx':
             await running_loop.run_in_executor(None, render_pptx_document, dataframe, report_path,
                                                PATH_TO_TEMPLATE / 'pptx_template.pptx')
-
         if r_format == 'xlsx':
             await running_loop.run_in_executor(None, render_xlsx_document, dataframe, report_path)
 

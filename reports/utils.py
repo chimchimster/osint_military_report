@@ -25,7 +25,8 @@ async def remove_report(
 
 async def cleanup_directory():
 
-    directory_path = pathlib.Path.cwd() / 'reports' / 'temp'
+    directory_path = pathlib.Path('osint_military_report') / 'reports' / 'temp'
+
     for item in directory_path.iterdir():
         if item.is_file():
             item.unlink()

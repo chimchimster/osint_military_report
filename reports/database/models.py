@@ -88,6 +88,7 @@ class SourceSubscriptionProfile(Base):
 
     res_id = Column(Integer, primary_key=True)
     subscription_name = Column(String(length=255))
+    members_count = Column(Integer)
     is_closed = Column(Boolean)
 
 

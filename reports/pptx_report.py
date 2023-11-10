@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from datetime import datetime
 
@@ -21,14 +20,14 @@ def render_pptx_document(
     """
     download_date = datetime.now()
     download_date = download_date.strftime("%d-%m-%Y")
-    users_total_count = str(dataframe.shape[0])
+    users_total_count = str(dataframe['profile_id'].unique().size)
     source_total_count = str(dataframe['user_res_id'].unique().size)
     source_vk_count = str(dataframe.loc[dataframe['soc_type'] == 1]['user_res_id'].unique().size)
     source_insta_count = str(dataframe.loc[dataframe['soc_type'] == 4]['user_res_id'].unique().size)
     sub_count = str(dataframe['subscription_res_id'].unique().size)
     alert_sub_count = str(dataframe.groupby(by=['subscription_res_id', 'alert_type'], dropna=True).count().shape[0])
     sub_vk_count = str(dataframe.loc[dataframe['soc_type'] == 1]['subscription_res_id'].unique().size)
-    sub_inst_count = str(dataframe.loc[dataframe['soc_type'] == 2]['subscription_res_id'].unique().size)
+    sub_inst_count = str(dataframe.loc[dataframe['soc_type'] == 4]['subscription_res_id'].unique().size)
     alert_type_1_count = str(dataframe.loc[dataframe['alert_type'] == 1]['subscription_res_id'].unique().size)
     alert_type_2_count = str(dataframe.loc[dataframe['alert_type'] == 2]['subscription_res_id'].unique().size)
     alert_type_3_count = str(dataframe.loc[dataframe['alert_type'] == 3]['subscription_res_id'].unique().size)

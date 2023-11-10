@@ -1,0 +1,44 @@
+.wrapper {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.table tbody{
+    width: 100%;
+    max-width: 210mm;
+    min-width: 210mm;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.table {
+    display: flex;
+    justify-content: center;
+}
+
+
+.table_tr {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-top: 1px solid #F0F1F3;
+    font-family: Arial, sans-serif;
+}
+
+.table_td {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    color: grey;
+    font-family: Arial, sans-serif;
+}
+
+.table_th {
+}
+
+h1{
+    text-align: center;
+    font-family: Arial, sans-serif;
+}

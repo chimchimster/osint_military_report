@@ -111,7 +111,8 @@ async def get_users_data_for_counters(moderator_id: int, **kwargs) -> Sequence[R
         join(
             UserMonitoringProfile,
             MonitoringProfileSource,
-            MonitoringProfileSource.profile_id == UserMonitoringProfile.profile_id
+            MonitoringProfileSource.profile_id == UserMonitoringProfile.profile_id,
+            isouter=True
         ).
         outerjoin(SourceUserSubscription, SourceUserSubscription.user_res_id == MonitoringProfileSource.res_id).
         outerjoin(Source, SourceUserSubscription.subscription_res_id == Source.res_id).
@@ -122,6 +123,26 @@ async def get_users_data_for_counters(moderator_id: int, **kwargs) -> Sequence[R
 
     result = await session.execute(select_stmt)
     return result.fetchall()
+
+
+@execute_transaction
+async def top_10_sources(**kwargs):
+    session = kwargs.get('session')
+
+    select_stmt = select(
+        SourceSubscriptionProfile.subscription_name,
+        SourceSubscriptionProfile.members_count
+    ).select_from(
+        join(
+            SourceSubscriptionProfile,
+            Alerts,
+            Alerts.res_id == SourceSubscriptionProfile.res_id
+        )
+    ).order_by(desc(SourceSubscriptionProfile.members_count)).limit(15)
+
+    result = await session.execute(select_stmt)
+    return result.fetchall()
+
 
 """
 SQL запрос в базу для пользователей
