@@ -29,7 +29,7 @@ fixture_3 = {
 async def test_load_requests(session, data):
 
     for _ in range(random.randint(10, 20)):
-        response = await session.post("http://127.0.0.1:8000/report/", json=data)
+        response = await session.post("http://127.0.0.1:8088/report/", json=data)
 
         if response.status == 200:
             content = await response.read()

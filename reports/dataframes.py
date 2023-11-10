@@ -11,7 +11,7 @@ from pandas import to_datetime, DataFrame
 from .database import *
 from .utils import *
 
-schema_path = Path.cwd() / 'reports' / 'schemas' / 'map.JSON'
+schema_path = Path('osint_military_report') / 'reports' / 'schemas' / 'map.JSON'
 
 STATUSES: Final[Dict] = {
     "1": "Лудомания",
