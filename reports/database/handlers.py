@@ -217,3 +217,34 @@ LEFT JOIN source as s ON sus.subscription_res_id = s.res_id
 LEFT JOIN alerts as a ON a.res_id = sus.subscription_res_id
 WHERE ump.id = moderator_id;
 """
+
+"""
+select 
+  MP.profile_id,
+    MP.full_name,
+    MP.profile_info,
+    MP.unit_id,
+    S.source_id,
+    S.res_id,
+    U.name as unit_name,
+    count(case when A.alert_type = 1 then 1 end) as alert_type_1,
+    count(case when A.alert_type = 2 then 1 end) as alert_type_2,
+    count(case when A.alert_type = 3 then 1 end) as alert_type_3,
+    count(case when A.alert_type = 4 then 1 end) as alert_type_4,
+    group_concat(distinct
+        case when S.source_type = 1 and S.soc_type = 1 then concat('https://vk.com/id', S.source_id) else null end
+        order by S.res_id asc separator ','
+    ) as vk_links,
+    group_concat(distinct
+      case when S.source_type = 1 and S.soc_type = 4 then concat('https://instagram.com/', json_unquote(json_extract(SUP.info_json, '$.username'))) else null end
+        order by SUP.res_id asc separator ','
+    ) as inst_links
+from monitoring_profile as MP
+  inner join unit as U using(unit_id)
+    left join monitoring_profile_source as MPS using(profile_id)
+    left join source as S using(res_id)
+    left join source_user_profile as SUP using(res_id)
+    left join source_user_subscription as SUS on SUS.user_res_id = MPS.res_id
+    left join alerts as A on A.res_id = SUS.subscription_res_id
+group by MP.profile_id;
+"""
