@@ -109,6 +109,7 @@ class Posts(Base):
     res_id = Column(Integer, primary_key=True)
     lang = Column(Integer)
     sentiment = Column(Integer)
+    post_type = Column(Integer)
 
 
 __all__ = [

@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from sqlalchemy import select, join, Sequence, Row, func, case, text, desc, distinct
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql.functions import coalesce
@@ -39,6 +41,7 @@ async def get_users_data_mapped_to_moderator(
     return result.fetchall()
 
 
+@lru_cache
 @execute_transaction
 async def get_subscriptions_data_mapped_to_moderator(
         moderator_id: int,
@@ -73,6 +76,30 @@ async def get_subscriptions_data_mapped_to_moderator(
         func.avg(Posts.sentiment),
         SourceSubscriptionProfile.is_closed,
         func.group_concat(distinct(Alerts.alert_type)).label('alerts_count'),
+        coalesce(func.sum(
+            case((Posts.post_type == 0, 1), else_=0)
+        )
+        ).label('pics'),
+        coalesce(func.sum(
+                case((Posts.post_type == 1, 1), else_=0)
+            )
+        ).label('links'),
+        coalesce(func.sum(
+                case((Posts.post_type == 2, 1), else_=0)
+            )
+        ).label('vid'),
+        coalesce(func.sum(
+                case((Posts.post_type == 3, 1), else_=0)
+            )
+        ).label('aud'),
+        coalesce(func.sum(
+                case((Posts.post_type == 4, 1), else_=0)
+            )
+        ).label('files'),
+        coalesce(func.sum(
+                case((Posts.post_type is None, 1), else_=0)
+            )
+        ).label('text')
     ).order_by(
         desc(text('alerts_count')),
         desc(text('subscription_title'))
@@ -86,7 +113,7 @@ async def get_subscriptions_data_mapped_to_moderator(
         outerjoin(Posts, Posts.res_id == SourceSubscriptionProfile.res_id).
         outerjoin(Alerts, Alerts.res_id == SourceSubscriptionProfile.res_id)
     ).group_by(
-        SourceSubscriptionProfile.res_id, Alerts.res_id
+        SourceSubscriptionProfile.res_id, Alerts.res_id, Posts.post_type
     ).filter(
         User.id == moderator_id
     )
@@ -193,7 +220,13 @@ select
     ) AS mode_lang,
     count(posts.res_id) as subscription_posts_count,
     source_subscription_profile.is_closed as subscription_availability,
-    group_concat(distinct alerts.alert_type) as subscription_status
+    group_concat(distinct alerts.alert_type) as subscription_status,
+    sum(case when posts.post_type = 0 then 1 else 0 end) as pics,
+    sum(case when posts.post_type = 1 then 1 else 0 end) as links,
+    sum(case when posts.post_type = 2 then 1 else 0 end) as video,
+    sum(case when posts.post_type = 3 then 1 else 0 end) as audio,
+    sum(case when posts.post_type = 4 then 1 else 0 end) as file,
+    sum(case when posts.post_type is null then 1 else 0 end) as text
 from user
   inner join user_monitoring_profile on user_monitoring_profile.id = user.id
   inner join monitoring_profile_source ON user_monitoring_profile.profile_id = monitoring_profile_source.profile_id
@@ -203,7 +236,7 @@ from user
   inner join source on source.res_id = source_subscription_profile.res_id
   left join posts on source_subscription_profile.res_id = posts.res_id
   left join alerts on source_subscription_profile.res_id = alerts.res_id
-where user.id = 1
+where user.id = 10
 group by source_subscription_profile.res_id, alerts.res_id
 order by subscription_status desc, subscription_title desc, source.soc_type desc;
 """

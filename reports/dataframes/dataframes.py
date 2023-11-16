@@ -103,6 +103,12 @@ async def generate_dataframe_for_subscriptions(
         'Тональность',
         'Доступность',
         'Статус',
+        'Изображение',
+        'Ссылки',
+        'Видео',
+        'Аудио',
+        'Файлы',
+        'Текст',
     ])
 
     dataframe['Язык'] = dataframe['Язык'].fillna('Неопределен').astype(str).map(langs_schema)
@@ -120,9 +126,21 @@ async def prepare_subscription_data(
         posts_sentiment: int,
         availability: bool,
         status: str,
+        pics_count: int,
+        links_count: int,
+        video_count: int,
+        audio_count: int,
+        files_count: int,
+        text_count: int,
 ) -> List:
     """
 
+    :param text_count:
+    :param files_count:
+    :param audio_count:
+    :param video_count:
+    :param links_count:
+    :param pics_count:
     :param subscription_title:
     :param subscription_link:
     :param soc_type:
@@ -147,7 +165,21 @@ async def prepare_subscription_data(
     except TypeError:
         posts_sentiment = 0
 
-    return [subscription_title, subscription_link, soc_type, posts_lang, posts_sentiment, availability, status]
+    return [
+        subscription_title,
+        subscription_link,
+        soc_type,
+        posts_lang,
+        posts_sentiment,
+        availability,
+        status,
+        pics_count,
+        links_count,
+        video_count,
+        audio_count,
+        files_count,
+        text_count,
+    ]
 
 
 async def prepare_user_data(
