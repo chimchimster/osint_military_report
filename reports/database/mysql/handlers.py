@@ -72,7 +72,7 @@ async def get_subscriptions_data_mapped_to_moderator(
         """),
         func.avg(Posts.sentiment),
         SourceSubscriptionProfile.is_closed,
-        func.group_concat(distinct(Alerts.alert_type)).label('alerts_count')
+        func.group_concat(distinct(Alerts.alert_type)).label('alerts_count'),
     ).order_by(
         desc(text('alerts_count')),
         desc(text('subscription_title'))

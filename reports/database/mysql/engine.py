@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from .config import conf
+from osint_military_report.reports.database.config import conf
 
 
 class MySQLEngine:

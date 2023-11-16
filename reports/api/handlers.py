@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from .models import ClientSettings
-from .tasks import ReportDistributor
+from reports.tasks import ReportDistributor
 
 router = APIRouter()
 

@@ -9,24 +9,25 @@ from collections import defaultdict
 
 from fastapi.responses import FileResponse
 
-from .models import ClientSettings
-from .database import *
-from .xlsx_report import *
-from .csv_report import *
-from .pptx_report import *
-from .pdf_report import *
-from .dataframes import *
-from .utils import *
+from reports.api.models import ClientSettings
+from osint_military_report.reports.database import *
+from reports.builders.xlsx_report import *
+from reports.builders.csv_report import *
+from reports.builders.pptx_report import *
+from reports.builders.pdf_report import *
+from reports.dataframes.dataframes import *
+from reports.utils.utils import *
 
 REPORT_STACK_LOCK = asyncio.Lock()
 PREVIOUS_REPORTS_STACK: Final[Dict] = defaultdict(list)
 
-PATH_TO_TEMPLATE: Path = Path('osint_military_report') / 'reports' / 'templates'
+PATH_TO_TEMPLATE: Path = Path('/home/newuser/osint_military_reports/osint_military_report/reports/templates')
+
 
 class ReportDistributor:
     __slots__ = ('resp_obj', 'report_path',)
 
-    path_to_temp: Path = Path('osint_military_report') / 'reports' / 'temp'
+    path_to_temp: Path = Path('/home/newuser/osint_military_reports/osint_military_report/reports/temp')
 
     def __init__(self, resp_obj: ClientSettings):
         self.resp_obj = resp_obj

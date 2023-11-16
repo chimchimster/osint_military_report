@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from reports.jinja_template import render_template
+from reports.utils.jinja_template import render_template
 import pdfkit
 
 path_to_css = Path('osint_military_report') / 'reports' / 'static' / 'css' / 'style.css'

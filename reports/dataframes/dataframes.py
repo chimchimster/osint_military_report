@@ -8,10 +8,10 @@ from typing import List, Final, Dict
 import pandas as pd
 from pandas import to_datetime, DataFrame
 
-from .database import *
-from .utils import *
+from osint_military_report.reports.database import *
+from reports.utils.utils import *
 
-schema_path = Path('osint_military_report') / 'reports' / 'schemas' / 'map.JSON'
+schema_path = Path('/home/newuser/osint_military_reports/osint_military_report/reports/schemas/map.JSON')
 
 STATUSES: Final[Dict] = {
     "1": "Лудомания",
@@ -70,6 +70,7 @@ async def generate_dataframe_for_users(
     dataframe['Время последнего входа в сеть'] = to_datetime(dataframe['Время последнего входа в сеть'], unit='s')
     dataframe['Время последнего входа в сеть'] = (dataframe['Время последнего входа в сеть']
                                                   .dt.strftime('%d-%m-%Y %H:%M:%S'))
+
     return dataframe
 
 
