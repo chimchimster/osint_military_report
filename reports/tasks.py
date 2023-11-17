@@ -10,7 +10,7 @@ from collections import defaultdict
 from fastapi.responses import FileResponse
 
 from reports.api.models import ClientSettings
-from osint_military_report.reports.database import *
+from reports.database import *
 from reports.builders.xlsx_report import *
 from reports.builders.csv_report import *
 from reports.builders.pptx_report import *

@@ -9,7 +9,7 @@ async def main():
     signal.signal(signal.SIGINT, graceful_exit)
 
     try:
-        config = uvicorn.Config(app="app:app", host="0.0.0.0", port=8088, log_level="info", reload=True)
+        config = uvicorn.Config(app="app:app", host="0.0.0.0", port=8080, log_level="info", reload=True)
         server = uvicorn.Server(config)
         await server.serve()
     except KeyboardInterrupt:

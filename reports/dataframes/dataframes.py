@@ -8,7 +8,7 @@ from typing import List, Final, Dict
 import pandas as pd
 from pandas import to_datetime, DataFrame
 
-from osint_military_report.reports.database import *
+from reports.database import *
 from reports.utils.utils import *
 
 schema_path = Path('osint_military_report') / 'reports' / 'schemas' / 'map.JSON'
