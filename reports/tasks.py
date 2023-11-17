@@ -21,13 +21,13 @@ from reports.utils.utils import *
 REPORT_STACK_LOCK = asyncio.Lock()
 PREVIOUS_REPORTS_STACK: Final[Dict] = defaultdict(list)
 
-PATH_TO_TEMPLATE: Path = Path('/home/newuser/osint_military_reports/osint_military_report/reports/templates')
+PATH_TO_TEMPLATE: Path = Path('osint_military_report') / 'reports' / 'templates'
 
 
 class ReportDistributor:
     __slots__ = ('resp_obj', 'report_path',)
 
-    path_to_temp: Path = Path('/home/newuser/osint_military_reports/osint_military_report/reports/temp')
+    path_to_temp: Path = Path('osint_military_report') / 'reports' / 'temp'
 
     def __init__(self, resp_obj: ClientSettings):
         self.resp_obj = resp_obj

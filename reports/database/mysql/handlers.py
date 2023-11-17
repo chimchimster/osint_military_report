@@ -1,7 +1,6 @@
 from functools import lru_cache
 
 from sqlalchemy import select, join, Sequence, Row, func, case, text, desc, distinct
-from sqlalchemy.orm import aliased
 from sqlalchemy.sql.functions import coalesce
 
 from .models import *
@@ -97,7 +96,7 @@ async def get_subscriptions_data_mapped_to_moderator(
             )
         ).label('files'),
         coalesce(func.sum(
-                case((Posts.post_type is None, 1), else_=0)
+                case((Posts.post_type == None, 1), else_=0)
             )
         ).label('text')
     ).order_by(
@@ -110,10 +109,10 @@ async def get_subscriptions_data_mapped_to_moderator(
         join(SourceUserSubscription, MonitoringProfileSource.res_id == SourceUserSubscription.user_res_id).
         join(SourceSubscriptionProfile, SourceUserSubscription.subscription_res_id == SourceSubscriptionProfile.res_id).
         join(Source, Source.res_id == SourceSubscriptionProfile.res_id).
-        outerjoin(Posts, Posts.res_id == SourceSubscriptionProfile.res_id).
-        outerjoin(Alerts, Alerts.res_id == SourceSubscriptionProfile.res_id)
+        join(Posts, Posts.res_id == SourceSubscriptionProfile.res_id).
+        join(Alerts, Alerts.res_id == SourceSubscriptionProfile.res_id)
     ).group_by(
-        SourceSubscriptionProfile.res_id, Alerts.res_id, Posts.post_type
+        SourceSubscriptionProfile.res_id, Alerts.res_id
     ).filter(
         User.id == moderator_id
     )
@@ -234,8 +233,8 @@ from user
   inner join source_user_subscription on source_user_profile.res_id = source_user_subscription.user_res_id
   inner join source_subscription_profile on source_subscription_profile.res_id = source_user_subscription.subscription_res_id
   inner join source on source.res_id = source_subscription_profile.res_id
-  left join posts on source_subscription_profile.res_id = posts.res_id
-  left join alerts on source_subscription_profile.res_id = alerts.res_id
+  inner join posts on source_subscription_profile.res_id = posts.res_id
+  inner join alerts on source_subscription_profile.res_id = alerts.res_id
 where user.id = 10
 group by source_subscription_profile.res_id, alerts.res_id
 order by subscription_status desc, subscription_title desc, source.soc_type desc;

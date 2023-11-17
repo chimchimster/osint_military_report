@@ -2,7 +2,7 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
-PATH_TO_ENV: Path = Path('/home/newuser/osint_military_reports/osint_military_report/reports/database/.env')
+PATH_TO_ENV: Path = Path('osint_military_report') / 'reports' / 'database' / '.env'
 
 
 class DBConfz(BaseSettings):
