@@ -1,6 +1,6 @@
-from osint_military_report.reports.database.mysql.handlers import *
-from osint_military_report.reports.database.mysql.models import *
-from osint_military_report.reports.database.clickhouse.handlers import *
+from reports.database.mysql.handlers import *
+from reports.database.mysql.models import *
+from reports.database.clickhouse.handlers import *
 
 __all__ = [
     'top_10_sources',
